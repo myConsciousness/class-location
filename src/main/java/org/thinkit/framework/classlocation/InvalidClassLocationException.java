@@ -22,7 +22,7 @@ package org.thinkit.framework.classlocation;
  * @since 1.0
  * @version 1.0
  */
-public final class InvalidClassLocationException extends RuntimeException {
+final class InvalidClassLocationException extends RuntimeException {
 
     /**
      * serialVersionUID
