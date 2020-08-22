@@ -55,7 +55,7 @@ public final class ClassLocation {
     /**
      * ファイルパスのregexパターン
      */
-    private static final String FILE_PATH_PATTERN = PathPrefix.file() + "[A-Za-z]:.*";
+    private static final String FILE_PATH_REGEX_PATTERN = PathPrefix.file() + "[A-Za-z]:.*";
 
     /**
      * 検索対象クラス
@@ -177,7 +177,7 @@ public final class ClassLocation {
             path = path.substring(4, path.indexOf("!/"));
         }
 
-        if (PlatformChecker.isWindows() && path.matches(FILE_PATH_PATTERN)) {
+        if (PlatformChecker.isWindows() && path.matches(FILE_PATH_REGEX_PATTERN)) {
             path = PathPrefix.file() + path.substring(5);
         }
 
