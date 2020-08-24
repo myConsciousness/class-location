@@ -16,10 +16,8 @@ package org.thinkit.framework.classlocation;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.thinkit.common.util.PlatformChecker;
 import org.thinkit.framework.classlocation.catalog.PathPrefix;
 import org.thinkit.framework.classlocation.catalog.PathSuffix;
 
@@ -51,11 +49,6 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public final class ClassLocation {
-
-    /**
-     * ファイルパスのregexパターン
-     */
-    private static final String FILE_PATH_REGEX_PATTERN = PathPrefix.file() + "[A-Za-z]:.*";
 
     /**
      * 検索対象クラス
@@ -130,17 +123,17 @@ public final class ClassLocation {
      */
     public URL toUrl() {
 
-        final URL codeSourceLocation = this.clazz.getProtectionDomain().getCodeSource().getLocation();
+        final URL resourceLocation = this.clazz.getProtectionDomain().getCodeSource().getLocation();
 
-        if (codeSourceLocation != null) {
-            return codeSourceLocation;
+        if (resourceLocation != null) {
+            return resourceLocation;
         }
 
         final String className = this.clazz.getSimpleName() + PathSuffix.clazz();
         final URL classResource = this.clazz.getResource(className);
 
         if (classResource == null) {
-            throw new InvalidClassLocationException(String.format("%s not found", className));
+            throw new ClassResourceNotFoundException(String.format("%s not found", className));
         }
 
         final String url = classResource.toString();
@@ -154,41 +147,6 @@ public final class ClassLocation {
             return new URL(this.removeJarPrefix(url, suffix));
         } catch (MalformedURLException e) {
             throw new InvalidClassLocationException(e);
-        }
-    }
-
-    /**
-     * {@link ClassLocation} クラスのインスタンス生成時に渡されたクラスのファイルパスを {@link File}
-     * オブジェクトへ変換し返却します。
-     * <p>
-     * {@link URL} オブジェクトへの変換は {@link #toUrl()} メソッドを使用しています。
-     *
-     * @return {@link ClassLocation} クラスのインスタンス生成時に渡されたクラスのファイルパスを変換した {@link File}
-     *         オブジェクト
-     *
-     * @throws InvalidClassLocationException 不正なファイルパスを検知した場合
-     */
-    public File toFile() {
-
-        final URL url = this.toUrl();
-        String path = url.toString();
-
-        if (path.startsWith(PathPrefix.jar())) {
-            path = path.substring(4, path.indexOf("!/"));
-        }
-
-        if (PlatformChecker.isWindows() && path.matches(FILE_PATH_REGEX_PATTERN)) {
-            path = PathPrefix.file() + path.substring(5);
-        }
-
-        try {
-            return new File(new URL(path).toURI());
-        } catch (MalformedURLException | URISyntaxException ignore) {
-            if (path.startsWith(PathPrefix.file())) {
-                return new File(path.substring(5));
-            } else {
-                throw new InvalidClassLocationException(String.format("Invalid URL -> %s", url.toString()));
-            }
         }
     }
 
